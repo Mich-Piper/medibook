@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MediBook — Clinic Booking System</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f0f4f8;color:#1a2332;min-height:100vh}
+.topbar{background:#1a2332;padding:13px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{color:#fff;font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px}
+.nav{display:flex;gap:6px}
+.nav-item{padding:6px 14px;border-radius:6px;font-size:13px;color:rgba(255,255,255,.6);cursor:pointer;transition:all .2s}
+.nav-item:hover,.nav-item.active{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.active{color:#4ade80}
+.user-area{display:flex;align-items:center;gap:10px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#22c55e;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff}
+.demo-tag{background:#e3b341;color:#1a2332;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.main{display:grid;grid-template-columns:1fr 320px;gap:20px;padding:28px;align-items:start}
+.card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.card-title{font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#888;margin-bottom:8px}
+select,input[type=date]{width:100%;padding:9px 12px;border:1px solid #dde3ea;border-radius:8px;font-size:13px;font-family:inherit;margin-bottom:14px;outline:none;transition:border .2s}
+select:focus,input[type=date]:focus{border-color:#1a2332}
+.slots-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.slot{padding:8px 4px;border:1px solid #dde3ea;border-radius:8px;font-size:12px;text-align:center;cursor:pointer;transition:all .2s;font-weight:500}
+.slot:hover{border-color:#1a2332;color:#1a2332}
+.slot.selected{background:#1a2332;color:#fff;border-color:#1a2332}
+.slot.taken{background:#f5f5f5;color:#bbb;cursor:not-allowed}
+.book-btn{width:100%;background:#1a2332;color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:background .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.book-btn:hover{background:#2d3f5c}
+.appt-card{border-left:3px solid #22c55e;background:#f8fffe;border-radius:0 10px 10px 0;padding:12px 14px;margin-bottom:10px;cursor:pointer;transition:box-shadow .2s}
+.appt-card:hover{box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.appt-card.pending{border-color:#f59e0b;background:#fffbf0}
+.appt-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.appt-spec{font-size:11px;color:#888}
+.appt-date{font-size:11px;color:#555;margin-top:4px;display:flex;align-items:center;gap:4px}
+.badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-top:5px}
+.badge.confirmed{background:#dcfce7;color:#16a34a}
+.badge.pending{background:#fef9c3;color:#92400e}
+.badge.cancelled{background:#fee2e2;color:#dc2626}
+.doctors-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0}
+.doctor-card{border:1px solid #eee;border-radius:10px;padding:12px;cursor:pointer;transition:all .2s}
+.doctor-card:hover,.doctor-card.selected{border-color:#1a2332;box-shadow:0 2px 8px rgba(26,35,50,.1)}
+.doctor-card.selected{background:#f0f4f8}
+.doc-name{font-size:13px;font-weight:600;margin-bottom:2px}
+.doc-spec{font-size:11px;color:#888;margin-bottom:4px}
+.doc-rating{font-size:11px;color:#f59e0b}
+.doc-avail{font-size:10px;font-weight:600;margin-top:4px}
+.doc-avail.free{color:#16a34a}
+.doc-avail.busy{color:#dc2626}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.stat{background:#fff;border-radius:12px;padding:16px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.stat-num{font-size:24px;font-weight:700;color:#1a2332;margin-bottom:3px}
+.stat-lbl{font-size:11px;color:#888}
+.success-msg{background:#dcfce7;border:1px solid #86efac;border-radius:10px;padding:14px;text-align:center;display:none;margin-top:14px}
+.success-msg h3{color:#16a34a;font-size:14px;margin-bottom:4px}
+.success-msg p{color:#166534;font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div style="display:flex;align-items:center;gap:24px">
+    <div class="logo">🏥 MediBook</div>
+    <div class="nav">
+      <div class="nav-item active">Book</div>
+      <div class="nav-item">My Appointments</div>
+      <div class="nav-item">Records</div>
+      <div class="nav-item">Messages</div>
+    </div>
+  </div>
+  <div class="user-area">
+    <span style="font-size:12px;color:rgba(255,255,255,.6)">Patient Portal <span class="demo-tag">DEMO</span></span>
+    <div class="avatar">MP</div>
+  </div>
+</div>
+
+<div style="padding:28px 28px 0">
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num">2</div><div class="stat-lbl">Upcoming Appointments</div></div>
+    <div class="stat"><div class="stat-num">8</div><div class="stat-lbl">Past Visits</div></div>
+    <div class="stat"><div class="stat-num">3</div><div class="stat-lbl">Doctors on Record</div></div>
+  </div>
+</div>
+
+<div class="main">
+  <div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title">📅 Book an Appointment</div>
+
+      <div class="section-label">Select Doctor</div>
+      <div class="doctors-grid" id="doctorGrid"></div>
+      <div style="height:14px"></div>
+
+      <div class="section-label">Select Date</div>
+      <input type="date" id="dateInput" />
+
+      <div class="section-label">Available Time Slots</div>
+      <div class="slots-grid" id="slotsGrid"></div>
+
+      <div class="section-label">Reason for Visit</div>
+      <select id="reasonSelect">
+        <option>General check-up</option>
+        <option>Follow-up consultation</option>
+        <option>Test results review</option>
+        <option>New symptoms</option>
+        <option>Prescription renewal</option>
+      </select>
+
+      <button class="book-btn" onclick="bookAppointment()">📲 Book &amp; Send SMS Reminder</button>
+      <div class="success-msg" id="successMsg">
+        <h3>✅ Appointment Confirmed!</h3>
+        <p>SMS reminder sent via Termii. Check your phone for confirmation.</p>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">📋 Upcoming Appointments</div>
+      <div id="appointments"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📊 Health Summary</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#888">Blood Pressure</span><span style="font-weight:600;color:#16a34a">120/80 mmHg ✓</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#888">Blood Sugar</span><span style="font-weight:600;color:#16a34a">5.4 mmol/L ✓</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#888">Last Visit</span><span style="font-weight:600">May 10, 2025</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#888">Next Due</span><span style="font-weight:600;color:#f59e0b">Jun 12, 2025</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#888">Allergies</span><span style="font-weight:600;color:#dc2626">Penicillin</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var doctors=[
+    {name:'Dr. Amina Bello',spec:'General Practice',rating:'⭐ 4.9 (142)',avail:true},
+    {name:'Dr. Chidi Osu',spec:'Cardiology',rating:'⭐ 4.8 (98)',avail:true},
+    {name:'Dr. Ngozi Eze',spec:'Paediatrics',rating:'⭐ 4.7 (211)',avail:false},
+    {name:'Dr. Emeka Nwodu',spec:'Dermatology',rating:'⭐ 4.9 (76)',avail:true}
+  ];
+  var selectedDoctor=0, selectedSlot=-1;
+  var dg=document.getElementById('doctorGrid');
+  doctors.forEach(function(d,i){
+    var card=document.createElement('div'); card.className='doctor-card'+(i===0?' selected':'');
+    card.innerHTML='<div class="doc-name">'+d.name+'</div><div class="doc-spec">'+d.spec+'</div>'+
+      '<div class="doc-rating">'+d.rating+'</div>'+
+      '<div class="doc-avail '+(d.avail?'free':'busy')+'">'+(d.avail?'● Available today':'● Fully booked today')+'</div>';
+    card.onclick=function(){
+      document.querySelectorAll('.doctor-card').forEach(function(c){c.classList.remove('selected');});
+      card.classList.add('selected'); selectedDoctor=i;
+    };
+    dg.appendChild(card);
+  });
+
+  var allSlots=['8:00 AM','8:30 AM','9:00 AM','9:30 AM','10:00 AM','10:30 AM','11:00 AM','11:30 AM','2:00 PM','2:30 PM','3:00 PM','3:30 PM'];
+  var takenSlots=[1,4,7,9];
+  var sg=document.getElementById('slotsGrid');
+  allSlots.forEach(function(t,i){
+    var btn=document.createElement('div');
+    var taken=takenSlots.indexOf(i)>-1;
+    btn.className='slot'+(taken?' taken':'');
+    btn.textContent=t;
+    if(!taken){
+      btn.onclick=function(){
+        document.querySelectorAll('.slot:not(.taken)').forEach(function(s){s.classList.remove('selected');});
+        btn.classList.add('selected'); selectedSlot=i;
+      };
+    }
+    sg.appendChild(btn);
+  });
+
+  var today=new Date(); today.setDate(today.getDate()+3);
+  document.getElementById('dateInput').value=today.toISOString().split('T')[0];
+
+  var appts=[
+    {doc:'Dr. Amina Bello',spec:'General Practice',date:'Jun 12 · 10:00 AM',status:'confirmed'},
+    {doc:'Dr. Chidi Osu',spec:'Cardiology',date:'Jun 20 · 9:30 AM',status:'pending'}
+  ];
+  var ac=document.getElementById('appointments');
+  appts.forEach(function(a){
+    var div=document.createElement('div'); div.className='appt-card'+(a.status==='pending'?' pending':'');
+    div.innerHTML='<div class="appt-name">'+a.doc+'</div><div class="appt-spec">'+a.spec+'</div>'+
+      '<div class="appt-date">📅 '+a.date+'</div><span class="badge '+a.status+'">'+a.status.charAt(0).toUpperCase()+a.status.slice(1)+'</span>';
+    div.onclick=function(){alert('Appointment details for '+a.doc+' on '+a.date);};
+    ac.appendChild(div);
+  });
+
+  function bookAppointment(){
+    if(selectedSlot<0){alert('Please select a time slot first.');return;}
+    var msg=document.getElementById('successMsg');
+    msg.style.display='block';
+    var doc=doctors[selectedDoctor];
+    msg.querySelector('p').textContent='SMS confirmation sent to your phone via Termii. '+doc.name+' at '+allSlots[selectedSlot]+'.';
+    document.querySelector('.book-btn').textContent='✓ Booked!';
+    document.querySelector('.book-btn').style.background='#16a34a';
+  }
+</script>
+</body>
+</html>
